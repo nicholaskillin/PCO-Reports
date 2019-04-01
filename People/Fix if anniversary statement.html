@@ -1,0 +1,107 @@
+{% assign sorted_people = people | sort: 'last_name' %}
+<html>
+  <head>
+    <title>Directory</title>
+    <style>
+      @page { margin: 0.5in 0in 0in 0.0825in; size: US-Letter; }
+      ul { margin: 0; padding: 0; }
+      ul.labels li {
+        margin: 0 0 0 0.13in;
+        padding: 0;
+        float: left;
+        width: 2.625in;
+        height: 2in;
+        display: block;
+      }
+      ul.labels li div.address {
+        margin-left: 0.125in;
+        margin-top: 0.1in;
+      }
+    </style>
+  </head>
+  <body>
+    <ul class="labels">
+      
+{% for person in sorted_people %}      
+    <li>
+    <div class="address">
+     	{% if person.primary_contacts == empty %}
+ 			<strong> {{ person.last_name }}, {{ person.first_name }}</strong> <br>
+        {% endif %}
+
+        {% for household in person.households %}
+            {% assign household = person.households.first %}
+            {% assign active_adults = household.adults | active %}
+            {% for adult in active_adults %}
+              <strong>
+              {% if forloop.first == true %}
+                    {{ adult.last_name }}, {{ adult.first_name }}
+              {% else %}
+                &amp; {{ adult.first_name }}
+              {% endif %}
+              </strong>
+            {% endfor %}
+            <br>
+        {% endfor %}
+            			
+        {% for household in person.households %}
+            {% if household.children != empty %}
+            	Children: 
+            	{% for child in household.children %} 
+            		{% unless child.inactive == true %}
+            			{% if forloop.first == true %}
+            				{{ child.first_name }}
+            			{% else %}
+            				&amp; {{ child.first_name }}
+            			{% endif %}
+            		{% endunless %}
+            	{% endfor %}<br>
+            {% endif %}
+        {% endfor %}
+    
+    {% for household in person.households %}
+        {% if household.primary_address.postal_address %}
+            {{ household.primary_address.postal_address }}
+            <br>
+        {% endif %}
+    {% endfor %}
+            
+    {% for household in person.households %}
+        {% for phone_number in household.primary_contact.phone_numbers %}
+            {% if phone_number.location == 'Home' %}
+                    H: {{ phone_number.number }}
+                    <br>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+        {% for household in person.households %}
+        {% assign household = person.households.first %}
+        {% assign active_adults = household.adults | active %}
+            {% for adult in active_adults %}
+                {% for phone_number in adult.phone_numbers %}
+                    {% if phone_number.location == 'Mobile'%}
+                        C: {{ adult.first_name }} {{ phone_number.number }}<br>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+            
+        {% for household in person.households %}
+        {% assign household = person.households.first %}
+        {% assign active_adults = household.adults | active %}
+            {% for adult in active_adults %}
+                {% for email in adult.emails %}
+                    {% if email.location == 'Home'%}
+                        {{ adult.first_name }}: {{ email.address }}<br>
+                    {% endif %}
+      							
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+    </li>
+{% endfor %}
+    </ul>
+  </body>
+</html>

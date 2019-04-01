@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Basic {{ report.kind | capitalize }} Report by Date</title>
+    <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
+    <link href='/favicon.ico?v=1106' rel='icon' type='image/x-icon'>
+    <meta charset="utf-8">
+    <style>
+        th {
+            border-bottom: 1px solid black;
+        }
+    </style>
+  </head>
+  <body>
+    {% if report.org_twenty_four_hour_time? %}
+      {% assign time_format = "%H:%M" %}
+    {% else %}
+      {% assign time_format = "%-I:%M%P" %}
+    {% endif %}
+    <div>
+        <h1 class="header-large txt-center gutter-bottom-small">Basic Report by Date</h1>
+        <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}: {{ report.start_date }} through {{ report.end_date }}</h2>
+    </div>
+    <div class="table-container">
+    <table>
+        <thead>
+            <th>Start</th>
+            <th>End</th>
+            <th style="width: 30%;">Event</th>
+            <th style="width: 25%;">Rooms</th>
+        </thead>
+        <tbody>
+            {% for day in days_with_instances %}
+                <tr>
+                    <td colspan=4><strong>{{ day.date | date: '%A, %B %-d, %Y'}}</strong></td>
+                </tr>
+                {% for instance in day.instances | sort: "starts_at" %}
+                    <tr>
+                        <td>
+                            {% capture start_date %} {{ instance.starts_at | date: "%m/%d/%Y" }} {% endcapture %} {% capture end_date %} {{ instance.ends_at | date: "%m/%d/%Y" }} {% endcapture %} {% capture today %} {{ day.date | date: "%m/%d/%Y" }} {% endcapture %}
+                            {% if start_date != end_date and start_date != today and end_date != today %}
+                                All Day
+                            {% elsif start_date != end_date and end_date == today %}
+                                Midnight
+                            {% else %}
+                                {{ instance.starts_at | date: time_format }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if start_date != end_date and start_date != today and end_date != today %}
+                                All Day
+                            {% elsif start_date != end_date and start_date == today %}
+                                Midnight
+                            {% else %}
+                                {{ instance.ends_at | date: time_format }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status {{ instance.approval_status_class }}">
+                                {{ instance.approval_status | replace: "Approved", "A" | replace: "Pending Conflicts", "PC"| replace: "Pending", "P" | replace: "Rejected", "R" }}
+                            </span>
+                            {{ instance.event.name }}
+                        </td>
+                        <td>
+                            Primary Room: {{ instance.reservation.primary_room_request.room.name }}
+                        </td>
+                        </tr>
+                    {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </body>
+</html>

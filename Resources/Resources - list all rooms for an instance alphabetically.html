@@ -1,0 +1,7 @@
+{% if instance.reservation.room_requests.size >0 %}
+<span class="soft">[Rooms:
+      {% assign rooms = instance.reservation.room_requests | map: "room" %}
+      {% assign room_names = rooms | sort: "name" | map: "name" %}
+      {{ room_names | join: ", " }}]
+</span>
+{% endif %}

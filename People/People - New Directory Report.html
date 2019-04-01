@@ -1,0 +1,220 @@
+<!--
+
+How would you like your people sorted? ('first_name', 'last_name')
+{% assign sorted_people = people | sort: 'first_name' %}
+
+When should the school section print? ('Always', 'Never', 'Child')
+{% assign print_school = 'Child' %}
+
+Which sections would you like to print? (true, false)
+{% assign print_apps = true %}
+{% assign print_households = true %}
+
+Which tabs would you like to print? ('All' 'None' or specific tab names 'Tab1 Tab2 Tab3')
+{% assign my_tabs = 'All'%}
+
+Print only active people. (This will remove all inactive people, including those marked as "deceased" from the report)
+{% assign include_inactive = false %}
+
+If no avatar exists, what image should print? To print nothing, delete the following line.
+{% assign no_avatar = 'https://people.planningcenteronline.com/static/no_photo_thumbnail.gif'%}
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    {{ helpers.bootstrap_3 }}
+    <!-- This report is styled using the Bootstrap framework. http://getbootstrap.com/css/ 
+				 If you'd rather provide your own styles, add them to the style section below. -->
+    
+    <style>
+      	.person { page-break-inside: avoid; }
+      	.avatar { width: 200px; }
+      	.household { padding-left: 15px; }
+      	.family_member {  float: left; padding-right: 15px; }
+      	img.family_member_avatar { 
+          height: 50px;
+          width: 50px;
+         
+					}
+      	img.thumbnail {
+          height: 100px;
+          width: 100px;
+          
+        }
+      	img.primary_contact { border: 2px solid #5cd595; }
+      	.family_member_name { text-align: center; padding-top: 3px; }
+      	.tab { width: 49%; float: left; padding: 10px; }
+      	.tab-title { font-size: 1.3em; background-color: #eee; padding: 5px; border: 1px solid #eee; }
+      	.answer { padding: 5px; border: 1px solid #eee; border-top: 0px; }
+    </style>
+  </head>
+  <body>
+    <div class="hidden-print">
+      <div class="alert alert-warning hidden-print" role="alert">
+        <a href="https://people.planningcenteronline.com/reports/{{ report.id }}.pdf?list_id={{list.id}}" class="alert-link">Print to PDF</a>
+      </div>    
+    </div>
+    
+    <div class="container">
+      <div class="pull-right">
+        <div class="well well-sm text-right">
+          {{ people.size }} {{ people.size | pluralize: "household", "households" }}<br>
+          List: {{ list.name }}<br>
+          List Creator: {{ list.created_by.name }}<br>
+        </div>
+      </div>
+      <h2>
+        {{ report.name }}
+        <br>
+        <small>
+          {{ organization.name }}
+        </small>
+      </h2>
+      <div class="clearfix"></div>
+      
+      <!-- Start creating the arry with or without inactive people -->
+      {% if include_inactive == false %}
+        {% assign included_people = sorted_people | active %}
+      {% else %}
+        {% assign included_people = sorted_people %}
+      {% endif %}
+    <!-- End creation of the array -->
+
+      {% for person in included_people %}
+      <div class="person">
+        <hr>
+        <div>
+          	<div class="media-left">
+              <img class="media-object thumbnail avatar" 
+                   src="{% if person.photo_url %}{{person.photo_url}}{% else %}{{no_avatar}}{% endif %}" 
+                   alt="{{person.name}} avatar">
+          	</div>
+
+          <div class="media-body">
+            <h3 class="media-heading">{{ person.name_prefix }}
+                  {{ person.first_name }}
+                  {{ person.middle_name }}
+                  {{ person.last_name }}
+                  {{ person.name_suffix }}
+            </h3>
+            
+            <!-- SCHOOL -->            
+              {% if person.child %}
+                  
+                    <h4>School/Grade</h4>
+                    <div>
+                      School: {{ person.school }}<br>
+                      School Type: {{ person.school_type }}<br>
+                      Grade: {{ person.grade }} {% if person.graduation_year %}({{ person.graduation_year }}){% endif %}<br>                   
+                    </div>
+
+                    {% unless person.medical_notes == blank %}
+                    <div class="alert alert-danger">
+                      <strong>Medical notes:</strong>
+                      {{ person.medical_notes }}
+                    </div>
+                    {% endunless %}           
+                  
+            			{% assign print_person_school = false %}
+              {% endif %}  <br>          
+            <!-- end SCHOOL -->
+            
+            
+          </div>                
+        </div>
+          
+        
+        <!-- CONTACT -->           
+              <div class="{{col_class}}">
+                  <h4>Contact</h4>
+                  <div>
+                      {% if person.emails != empty %}
+                          {% for email in person.emails %}
+                            {{ email.address }} ({{ email.location }})<br>
+                          {% endfor%}
+                      {% endif %}
+
+                      {% if person.phone_numbers != empty %}
+                          {% for phone_number in person.phone_numbers %}
+                            {{ phone_number.number }} ({{ phone_number.location }})<br>
+                          {% endfor%}
+                      {% endif %}
+
+                      {% if person.addresses != empty %}
+                          {% for address in person.addresses %}
+                            <address>
+                              {{ address.postal_address }} ({{ address.location }})
+                            </address>
+                          {% endfor%}               
+                      {% endif %}
+                  </div>
+              </div>
+            <!-- end CONTACT -->
+        
+           
+        
+        <!-- HOUSEHOLD -->
+            {% for household in person.households %}
+              {% if household.people.size > 1 %}
+              <div class="row household">
+                <h4>{{ household.name }}</h4>
+                {% if include_inactive == false %}
+                    {% assign included_household_people = household.people | active %}
+                {% else %}
+                    {% assign included_household_people = household.people %}
+                {% endif %}
+                  {% for household_person in included_household_people %}
+                    {% unless household_person.id == person.id %}
+                    <div class="family_member">
+                      <div class="thumbnail">
+                        <img class="family_member_avatar {% if household_person.id == household.primary_contact.id %}primary_contact{% endif %}" src="{% if household_person.photo_url %}{{household_person.photo_url}}{% else %}{{no_avatar}}{% endif %}" alt="avatar">
+                        <div class="family_member_name">
+                          
+             							<strong>{{ household_person.last_name }},
+                  								{{ household_person.first_name }}                  
+                            			{{ household_person.name_suffix }}</strong><br>
+                            
+                            {% if household_person.child %} 
+                                <strong>(Child)</strong><br> 
+                                <div>
+                                    {% if person.school != blank %}
+                                        School: {{ person.school }}<br> 
+                                        School Type: {{ person.school_type }}<br>
+                                    {% endif %}
+                                    {% if person.grade != blank %}
+                                        Grade: {{ person.grade }}
+                                        {% if person.graduation_year %}
+                                            ({{ person.graduation_year }})
+                                        {% endif %}
+                                        <br> 
+                                    {%endif%}                  
+                              </div>
+                  	
+                            {% else %}
+                                  {% for phone_number in household_person.phone_numbers %}
+                                    {{ phone_number.location }}: {{ phone_number.number }}<br>
+                                {% endfor %}
+
+                                {% for email in household_person.emails %}
+                                    {{ email.address }}<br>
+                                {% endfor %}  
+                            {%endif%}
+                            <br>    
+                        </div>
+                      </div>
+                    </div>
+                    {% endunless %}
+                  {% endfor %}
+              </div>
+              {% endif %}
+            {% endfor %}
+        <!-- end HOUSEHOLD -->
+       
+      </div>
+      
+      {% endfor %}
+    </div>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+{% assign sorted_people = people | sort: "grade" | reverse %}
+<html>
+  <head>
+    <title>Attendance Roster</title>
+    {{ helpers.bootstrap_3 }}
+    <style>
+      @page { margin: 0.50in; size: US-Letter; }
+      body { font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif; }
+      {{ helpers.bootstrap_3 }}
+    </style>
+  </head>
+  <body>
+        <div class="container">
+          {% for i in (1..12) %}
+					<div style="page-break-after: always;">
+       		<div class="pull-right">
+        		<div class="well well-sm text-right">
+          			Roster Printed:  {{ list.updated_at | date: "%B %e, %Y"  }}<br>
+          		    <strong>Class Date: _____ / _____ / _____</strong>
+        	    </div>
+    	    </div>
+      	    <table cellpadding="0"> 
+        		<tr>
+        			<td><img src="{{ organization.logo_url }}" width="100"> </td>
+         		    <td style="padding: 25px;"> 
+    			        <h1>
+        				    {{ list.name }}<br>
+        				    <small>{{ organization.name }}</small>
+                        </h1>
+                    </td>
+                </tr>
+   			</table>
+            <table class="table table-bordered table-condensed">
+                <thead>
+                    <tr>
+                        <th style="height:50px; vertical-align:bottom;" width="10">Attendance</th>
+                        <th style="height:50px; vertical-align:bottom;" width="250">Name</th>
+                        <th style="vertical-align:bottom;" width="300">Medical Notes</th>
+                        <th style="vertical-align:bottom;" width="100">Birthdate</th>
+                        <th style="vertical-align:bottom;" width="125">Grade</th>
+                        <th style="vertical-align:bottom;" width="75">Gender</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for person in sorted_people %}
+                    {% if person.grade == i %}
+                    <tr>
+                        <td style="height:50px; vertical-align:bottom;" width="50"></td>
+                        <td  style="height:50px; vertical-align:bottom;" width="250">{{ person.name }}</td>
+                        <td style="vertical-align:bottom; color:rgb(0, 0, 0); font-weight: bold; font-style:italic;" width="300">{% if person.medical_notes != '' %}{{ person.medical_notes }}{% endif %} </td>
+                        <td style="vertical-align:bottom;" width="100"> {{ person.birthdate }} </td>
+                        <td  style="vertical-align:bottom;" width="125"> {{ person.grade_name }} </td>
+                        <td style="vertical-align:bottom;" width="75"> {{person.gender}} </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                    <tr><td  style="height:50px;"></td><td style="vertical-align:bottom;"></td><td style="vertical-align:bottom;"></td><td></td><td></td><td style="vertical-align:bottom;"></td></tr>
+                    <tr><td  style="height:50px;"></td><td style="vertical-align:bottom;"></td><td style="vertical-align:bottom;"></td><td></td><td></td><td style="vertical-align:bottom;"></td></tr>
+                    <tr><td  style="height:50px;"></td><td style="vertical-align:bottom;"></td><td style="vertical-align:bottom;"></td><td></td><td></td><td style="vertical-align:bottom;"></td></tr>
+                    <tr><td  style="height:50px;"></td><td style="vertical-align:bottom;"></td><td style="vertical-align:bottom;"></td><td></td><td></td><td style="vertical-align:bottom;"></td></tr>
+                    <tr><td  style="height:50px;"></td><td style="vertical-align:bottom;"></td><td style="vertical-align:bottom;"></td><td></td><td></td><td style="vertical-align:bottom;"></td></tr>
+                    <tr><td  style="height:50px;"></td><td style="vertical-align:bottom;"></td><td style="vertical-align:bottom;"></td><td></td><td></td><td style="vertical-align:bottom;"></td></tr>
+                </tbody>
+          </table>
+         </div>
+        {% endfor %}
+     </div>
+  </body>
+</html>

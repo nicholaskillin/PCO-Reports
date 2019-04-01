@@ -1,0 +1,75 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    {{ helpers.bootstrap_3 }}
+    <!-- This report is styled using the Bootstrap framework. http://getbootstrap.com/css/ 
+				 If you'd rather provide your own styles, add them to the style section below. -->
+    
+    <style>
+      	tr.person > td { 
+          padding: 0.25em; }
+      	tr:nth-child(even) { background-color: #edf2f7; }
+      	thead { 
+          border-bottom: 1px solid #bec9d3; }
+				th { padding: .5em; }
+      	.avatar { 
+          width: 50px;
+        	height: 50px;
+					border-radius: 25px 25px 25px 25px;
+          -moz-border-radius: 25px 25px 25px 25px;
+          -webkit-border-radius: 25px 25px 25px 25px;
+        }
+      	.container {
+          width: 100%;
+          padding-top: 15px;
+          padding-left: 100px;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+       <div class="pull-right">
+        <div class="well well-sm text-right">
+          {{ people.size }} {{ people.size | pluralize: "person", "people" }}<br>
+          List Creator: {{ list.created_by.name }}<br>
+          Report Date:  {{ list.updated_at | date: "%B %e, %Y"  }}
+        </div>
+      </div>
+      <h2>
+        {{ list.name }}
+        <br>
+        <small>
+          {{ organization.name }}
+        </small>
+      </h2>
+      <div class="clearfix"></div>
+      <table style="width: 100%">
+      <thead>
+        <tr>
+          {% for column in list.columns %%}
+            <th style="text-align: left">{{column.name}}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+        <tbody>
+        {% for result in results %}
+            <tr class="person">
+            {% for column in list.columns %%}
+              <td>
+                {% assign detail = column | column_detail column, result %}
+                {% if column.identifier == "people.photo" %}
+                  <img class="avatar" src="{{ detail }}?g=50x50%23" />
+                {% elsif detail.filename %}
+                    <a href="{{detail.url}}" target="_blank">{{detail.filename}}</a>
+                {% else %}
+                  {{ detail }}
+                {% endif %}
+              </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+  </body>
+</html>

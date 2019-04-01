@@ -1,0 +1,94 @@
+<!-- Set to "true" if you want each day on it's own page -->
+{% assign day_page_break = false %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Basic {{ report.kind | capitalize }} Report by Date</title>
+    <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
+    <link href='/favicon.ico?v=1106' rel='icon' type='image/x-icon'>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    {% if report.org_twenty_four_hour_time? %}
+      {% assign time_format = "%H:%M" %}
+    {% else %}
+      {% assign time_format = "%-I:%M%P" %}
+    {% endif %}
+    {% for day in days %}
+      {% if day.instances.size > 0 %}
+        {% if forloop.first or day_page_break %}
+          <div>
+            <h1 class="header-large txt-center gutter-bottom-small">Basic {{ report.kind | capitalize }} Report by Date</h1>
+            <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}: {{ report.start_date }} through {{ report.end_date }}</h2>
+          </div>
+        {% endif %}
+        <div class="table-container{% if day_page_break and forloop.index < forloop.length  %} page-break{% endif %}">
+          <div class="gutter-bottom-large">
+            <h3 class="header-medium">{{ day.date | date: '%A, %B %-d, %Y'}} </h3>
+            <table>
+              <thead>
+                <tr>
+                  <th width="30%">Event Name</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th width="25%">Primary Room</th>
+                  <th width="20%">Event Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for instance in day.instances | sort: "starts_at" %}
+                  <tr>
+                    <td>
+                      <div>
+                        <div>
+                          <span class="status {{ instance.approval_status_class }}">
+                            {{ instance.approval_status | replace: "Approved", "A" | replace: "Pending Conflicts", "PC"| replace: "Pending", "P" | replace: "Rejected", "R" }}
+                          </span>
+                        </div>
+                        <div class="status-text {{ instance.approval_status_class }}">{{ instance.event.name }}</div>
+                      </div>
+                    </td>
+                    {% capture start_date %} {{ instance.starts_at | date: "%m/%d/%Y" }} {% endcapture %} {% capture end_date %} {{ instance.ends_at | date: "%m/%d/%Y" }} {% endcapture %} {% capture today %} {{ day.date | date: "%m/%d/%Y" }} {% endcapture %}
+                    <td>
+                      {% if start_date != end_date and start_date != today and end_date != today %}
+                        All Day
+                      {% elsif start_date != end_date and end_date == today %}
+                        Midnight
+                      {% else %}
+                        {% if instance.event_times.size > 1 %}
+                            {% for event_time in instance.event_times %}
+                                <strong>{{event_time.starts_at  | date: time_format | downcase }}</strong> - <i>({{ event_time.name }})</i><br>
+                            {% endfor %}
+                        {% else %}
+                            {{ instance.starts_at | date: time_format }}
+                        {% endif %}
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if start_date != end_date and start_date != today and end_date != today %}
+                        All Day
+                      {% elsif start_date != end_date and start_date == today %}
+                        Midnight
+                      {% else %}
+                        {% if instance.event_times.size > 1 %}
+                            {% for event_time in instance.event_times %}
+                                <strong>{{event_time.ends_at  | date: time_format | downcase }}</strong> - <i>({{ event_time.name }})</i><br>
+                            {% endfor %}
+                        {% else %}
+                            {{ instance.ends_at | date: time_format }}
+                        {% endif %}
+                      {% endif %}
+                    </td>
+                    <td>{{ instance.reservation.primary_room_request.room.name }}</td>
+                    <td>{{ instance.event.owner.name }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </body>
+</html>

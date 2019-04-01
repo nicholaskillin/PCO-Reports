@@ -1,0 +1,8 @@
+<h2>Cubbies</h2>
+    <table>{% for person in people  %}{% if person.awana.club.value == "Cubbies" %}
+      <tr class="{% cycle 'white', 'lightgray' %}">
+        <td>{{ person.first_name }} {{ person.last_name }} </td>
+        <td>{{ person.custom_tabs.awana.home_church }}</td>
+        <td>{{ person.age }} </td>
+      </tr>{% endif %}{% endfor %}
+    </table>

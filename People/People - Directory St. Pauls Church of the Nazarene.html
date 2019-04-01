@@ -1,0 +1,227 @@
+<!--
+
+How would you like your people sorted? ('first_name', 'last_name')
+{% assign sorted_people = people | sort: 'first_name' %}
+
+When should the school section print? ('Always', 'Never', 'Child')
+{% assign print_school = 'Child' %}
+
+Which sections would you like to print? (true, false)
+{% assign print_apps = true %}
+{% assign print_households = true %}
+
+Which tabs would you like to print? ('All' 'None' or specific tab names 'Tab1 Tab2 Tab3')
+{% assign my_tabs = 'All'%}
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    {{ helpers.bootstrap_3 }}
+    <!-- This report is styled using the Bootstrap framework. http://getbootstrap.com/css/ 
+				 If you'd rather provide your own styles, add them to the style section below. -->
+    
+    <style>
+      	.person { page-break-inside: avoid; }
+      	.avatar { width: 200px; }
+      	.household { padding-left: 15px; }
+      	.family_member {  float: left; padding-right: 15px; }
+      	img.family_member_avatar { 
+          height: 50px;
+          width: 50px;
+         
+					}
+      	img.thumbnail {
+          height: 100px;
+          width: 100px;
+          
+        }
+      	img.primary_contact { border: 2px solid #5cd595; }
+      	.family_member_name { text-align: center; padding-top: 3px; }
+      	.tab { width: 49%; float: left; padding: 10px; }
+      	.tab-title { font-size: 1.3em; background-color: #eee; padding: 5px; border: 1px solid #eee; }
+      	.answer { padding: 5px; border: 1px solid #eee; border-top: 0px; }
+    </style>
+  </head>
+  <body>
+    <div class="hidden-print">
+      <div class="alert alert-warning hidden-print" role="alert">
+        <a href="https://people.planningcenteronline.com/reports/{{ report.id }}.pdf?list_id={{list.id}}" class="alert-link">Print to PDF</a>
+      </div>    
+    </div>
+    
+    <div class="container">
+      <div class="pull-right">
+        <div class="well well-sm text-right">
+          {{ people.size }} {{ people.size | pluralize: "person", "people" }}<br>
+          List: {{ list.name }}<br>
+          List Creator: {{ list.created_by.name }}<br>
+        </div>
+      </div>
+      <h2>
+        {{ report.name }}
+        <br>
+        <small>
+          {{ organization.name }}
+        </small>
+      </h2>
+      <div class="clearfix"></div>
+
+      {% for person in sorted_people %}
+      <div class="person">
+        <hr>
+
+        <div>
+          <div class="media-body">
+            <h3 class="media-heading">{{ person.name_prefix }}
+                  {{ person.first_name }}
+                  {{ person.middle_name }}
+                  {{ person.last_name }}
+                  {{ person.name_suffix }}
+              <br>
+              Households: {% for household in person.households %} {% if forloop.last == true %} {{ household.name }} {% else %} {{ household.name }}, {% endif %} {% endfor %}
+            </h3>
+            
+            <!-- SCHOOL -->            
+              {% if person.child %}
+                  
+                    <h4>School/Grade</h4>
+                    <div>
+                      School: {{ person.school }}<br>
+                      School Type: {{ person.school_type }}<br>
+                      Grade: {{ person.grade }} {% if person.graduation_year %}({{ person.graduation_year }}){% endif %}<br>                   
+                    </div>
+
+                    {% unless person.medical_notes == blank %}
+                    <div class="alert alert-danger">
+                      <strong>Medical notes:</strong>
+                      {{ person.medical_notes }}
+                    </div>
+                    {% endunless %}           
+                  
+            			{% assign print_person_school = false %}
+              {% endif %}  <br>          
+            <!-- end SCHOOL -->
+            
+            
+          </div>                
+        </div>
+          
+        <!-- Important Dates -->
+        	<div class="{{col_class}}">
+            <h4>Important Dates</h4>
+            Birthday: {{ person.birthdate }} <br>
+            Marital Status: {{ person.marital_status }} 
+            {% if person.marital_status == "Married" %}
+            	<br>	
+            	Anniversary: {{ person.anniversary }} 
+            {% endif %}
+        	</div>
+        <!-- End Important Dates -->
+        
+        <!-- CONTACT -->           
+              <div class="{{col_class}}">
+                  <h4>Contact</h4>
+                  <div>
+                      {% if person.addresses != empty %}
+                          {% for address in person.addresses %}
+                            <address>
+                              Address: {{ address.location }}<br>{{ address.postal_address }}
+                            </address>
+                          {% endfor%}               
+                      {% endif %}
+                    	
+                    	{% if person.phone_numbers != empty %}
+                          {% for phone_number in person.phone_numbers %}
+                            {{ phone_number.number }} ({{ phone_number.location }})<br>
+                          {% endfor%}
+                      {% endif %}
+                    	<br>
+                    	{% if person.emails != empty %}
+                          {% for email in person.emails %}
+                            {{ email.address }} ({{ email.location }})<br>
+                          {% endfor%}
+                      {% endif %}
+                  </div>
+              </div>
+            <!-- end CONTACT -->
+        
+           
+        
+        <!-- HOUSEHOLD -->
+            {% for household in person.households %}
+              {% if household.people.size > 1 %}
+              <div class="row household">
+                <h4>{{ household.name }}</h4>
+                  {% for household_person in household.people %}
+                    {% unless household_person.id == person.id %}
+                    <div class="family_member">
+                      <div class="thumbnail">
+                        <div class="family_member_name">
+                          
+             							<strong>{{ household_person.last_name }},
+                  								{{ household_person.first_name }}                  
+                            {{ household_person.name_suffix }} </strong> <br> {% if household_person.child %} <strong> (Child)
+                           
+                            
+                            <br> </strong>
+                          		
+                              <div>
+                                Birthday: {{ person.birthdate }} <br>
+                                {% if person.school != blank %} School: {{ person.school }}<br> 
+                                School Type: {{ person.school_type }}<br>{%endif%}
+                                {% if person.grade != blank %} Grade: {{ person.grade }} {% if person.graduation_year %}({{ person.graduation_year }}){% endif %}<br> {%endif%}                  
+                              </div>
+                  	
+                          {%else%}
+                          				Birthday: {{ person.birthdate }} <br>
+            											Marital Status: {{ person.marital_status }}<br>
+            											{% if person.marital_status == "Married" %}	
+            												Anniversary: {{ person.anniversary }}<br>
+            											{% endif %}        
+                          
+                          
+                          				{% for phone_number in household_person.phone_numbers %}
+                          					{% if forloop.last == true %}
+                                    	{{ phone_number.location }}: {{ phone_number.number }}
+                          					{% else %}
+                          						{{ phone_number.location }}: {{ phone_number.number }}<br>
+                          					{% endif %}
+                                  {% endfor %}
+
+<br>
+                                  {% for email in household_person.emails %}
+                                    {% if forloop.last == true %}
+                          						{{ email.address }}
+                          					{% else %}
+                          						{{ email.address }}<br>
+                          					{% endif %}
+
+                                  {% endfor %}<br>
+                          
+                          {%endif%}
+      <br>
+                          
+                        </div>
+                      </div>
+                    </div>
+                    {% endunless %}
+                  {% endfor %}
+              </div>
+              {% endif %}
+            {% endfor %}
+        <!-- end HOUSEHOLD -->
+
+                    
+
+            
+            
+            
+        
+      </div>
+      
+      {% endfor %}
+    </div>
+  </body>
+</html>
