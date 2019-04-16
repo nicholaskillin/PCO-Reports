@@ -1,0 +1,127 @@
+<!-- Set to "true" if you want each day on it's own page -->
+{% assign day_page_break = false %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Basic {{ report.kind | capitalize }} Report by Date</title>
+    <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
+    <link href='/favicon.ico?v=1106' rel='icon' type='image/x-icon'>
+    <meta charset="utf-8">
+    <style>
+        hr { margin-top: 3px; margin-bottom: 3px; }
+    </style>
+  </head>
+  <body>
+    {% if report.org_twenty_four_hour_time? %}
+      {% assign time_format = "%H:%M" %}
+    {% else %}
+      {% assign time_format = "%-I:%M%P" %}
+    {% endif %}
+    {% for day in days_with_instances %}
+        {% if forloop.first or day_page_break %}
+          <div>
+            <h1 class="header-large txt-center gutter-bottom-small">Basic {{ report.kind | capitalize }} Report by Date</h1>
+            <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}: {{ report.start_date }} through {{ report.end_date }}</h2>
+          </div>
+        {% endif %}
+        <div class="table-container{% if day_page_break and forloop.index < forloop.length  %} page-break{% endif %}">
+          <div class="gutter-bottom-large">
+            <h3 class="header-medium">{{ day.date | date: '%A, %B %-d, %Y'}} </h3>
+            <table>
+              <thead>
+                <tr>
+                  <th width="25%">Event Name</th>
+                  <th width="10%">Start Time</th>
+                  <th width="10%">End Time</th>
+                  <th width="25%">Rooms</th>
+                  <th width="25%">Resources</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for instance in day.instances | sort: "starts_at" %}
+                  <tr style="border-left: 2px solid black;border-top: 2px solid black;border-right: 2px solid black; {% if instance.reservation.room_requests.size <= 1 and instance.reservation.resource_requests.size == 0 %}border-bottom: 2px solid black;{% endif %}">
+                    <td>
+                      <div>
+                        <div>
+                          <span class="status {{ instance.approval_status_class }}">
+                            {{ instance.approval_status | replace: "Approved", "A" | replace: "Pending Conflicts", "PC"| replace: "Pending", "P" | replace: "Rejected", "R" }}
+                          </span>
+                        </div>
+                        <div class="status-text {{ instance.approval_status_class }}">{{ instance.event.name }}</div>
+                      </div>
+                    </td>
+                    {% capture start_date %} {{ instance.starts_at | date: "%m/%d/%Y" }} {% endcapture %} {% capture end_date %} {{ instance.ends_at | date: "%m/%d/%Y" }} {% endcapture %} {% capture today %} {{ day.date | date: "%m/%d/%Y" }} {% endcapture %}
+                    <td>
+                      {% if start_date != end_date and start_date != today and end_date != today %}
+                        All Day
+                      {% elsif start_date != end_date and end_date == today %}
+                        Midnight
+                      {% else %}
+                        {{ instance.starts_at | date: time_format }}
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if start_date != end_date and start_date != today and end_date != today %}
+                        All Day
+                      {% elsif start_date != end_date and start_date == today %}
+                        Midnight
+                      {% else %}
+                        {{ instance.ends_at | date: time_format }}
+                      {% endif %}
+                    </td>
+                    <td>
+                        {{ instance.reservation.primary_room_request.room.name }}
+                        {% if instance.reservation.primary_room_request.room_setup %}
+                            <hr><span style="color: grey;">Room Setup: {{ instance.reservation.primary_room_request.room_setup.name }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <ul>
+                            {% for resource_request in instance.reservation.primary_room_request.resource_requests %}
+                                <li>{{ resource_request.quantity }} - {{ resource_request.resource.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    {% if instance.reservation.room_requests.size > 1 %}
+                        {% for room_request in instance.reservation.room_requests %}
+                            {% unless room_request.room.name == instance.reservation.primary_room_request.room.name %}
+                                <tr style="border-left: 2px solid black; border-right: 2px solid black; border-top: 1px solid black; {% if forloop.last == true and instance.reservation.resource_requests.size == 0 %}border-bottom: 2px solid black;{% endif %}">
+                                    <td colspan=3></td>
+                                    <td>
+                                        {{ room_request.room.name }}
+                                        {% if room_request.room_setup %}
+                                            <hr><span style="color: grey">Room Setup: {{ room_request.room_setup.name }}</span>
+                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        {% for resource_request in room_request.resource_requests %}
+                                            {{ resource_request.quantity }} - {{ resource_request.resource.name }}{% unless forloop.last == true %},<br>{% endunless %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endunless %}
+                        {% endfor %}
+                    {% endif %}
+                    {% if instance.reservation.resource_requests.size > 0 %}
+                        <tr style="border-left: 2px solid black; border-right: 2px solid black; border-top: 1px solid black; border-bottom: 2px solid black;">
+                            <td colspan="3"></td>
+                            <td><span style="color: grey">Resources not in a room</span></td>
+                            <td>
+                                <ul>
+                                    {% for resource_request in instance.reservation.resource_requests %}
+                                        <li> {{ resource_request.quantity }} - {{ resource_request.resource.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                    {% endif %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+      </div>
+    {% endfor %}
+  </body>
+</html>
