@@ -1,9 +1,5 @@
 <!-- Quick Customization
 
-To print a label with the household name, set to true
-To print labels with the last name of the primary contact, set to false
-{% assign print_household_name = true %}
-
 To only print labels for people who have an address, set the below to true
 To print labels for every household in the list, set to false
 {% assign address_present = true %}
@@ -40,22 +36,21 @@ To print labels for every household in the list, set to false
           {% if adult.gender == "M" %}
             {% if adult.marital_status == "Married" %}
               {% assign married = true %}
+              {% assign married_male = adult %}
             {% endif %}
           {% endif %}
         {% endfor %}
         {% if household.primary_address or address_present == false %}
-          {% if print_household_name == true %}
+          {% if married == true %}
             <li>
               <div class="address">
-                Married: {% if married == true %}Yes{% else %}No{%endif%}<br>
-                The {{ household.name }}<br>
+                Mr. and Mrs. {{ married_male.name }}<br>
                 {{ household.primary_address.postal_address }}
               </div>
             </li>
           {% else %}
             <li>
               <div class="address">
-                Married: {% if married == true %}Yes{% else %}No{%endif%}<br>
                 The {{ household.primary_contact.last_name }} Household<br>
                 {{ household.primary_address.postal_address }}
               </div>
