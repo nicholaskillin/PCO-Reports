@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <style>
+
+    /*-- Baseline Spacing --*/
+
+    tr {
+      page-break-inside: avoid;
+      clear: both;
+    }
+
+    tr:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    .entry {
+      float: left;
+      margin-bottom: 5px;
+      width: 230px;
+    }
+
+    .entry:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    .avatar {
+      border: 3px solid rgb(221, 221, 221);
+      float: left;
+      margin-right: 1em;
+      width: 3.6em;
+    }
+
+    .entry ul {
+      float: left;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-width: 150px;
+    }
+
+    li {
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      max-width: 140px;
+    }
+
+    /*-- allows long emails to break into multiple lines --*/
+
+    /*----- Font size equivalents for screen. This provides a more accurate preview of print sizes on a monitor ----*/
+
+    @media screen {
+      li {
+        font-size: 9px;
+      }
+
+      li.name {
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .btn {
+        font-size: 12px;
+      }
+
+      .wrapper {
+        padding: 1em;
+        border: 1px solid rgb(204, 204, 204);
+        margin: 1.5em auto;
+        max-width: 750px;
+      }
+
+      .alert {
+        background-color: #eff4fd;
+        color: #8a6d3b;
+        padding: 1em;
+        margin-bottom: 1.25em;
+        text-align: right;
+      }
+
+      .alert a.btn {
+        background: #5282e5;
+        border-radius: 3px;
+        color: #fff;
+        padding: 0.7em;
+        text-decoration: none;
+      }
+
+      .alert a.btn:hover {
+        background: #6283c1;
+      }
+    }
+
+
+    @media print {
+
+      .no-print {
+        display: none;
+      }
+
+      body {
+        /* vertical | horizontal */
+        margin: 0in .15in;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!--   print to PDF bar   -->
+  <div class="no-print">
+    <div class="alert" role="alert">
+      <a href="https://people.planningcenteronline.com/reports/{{ report.id }}.pdf?list_id={{list.id}}" class="btn">Print to PDF</a>
+    </div>
+  </div>
+  <!-- END print to PDF bar -->
+  <div class="wrapper">
+    <div class="main">
+        <table>
+            {% tablerow person in people cols:3 %}
+          		{% assign age = person.age | remove: " years" | plus: 0 %}
+          			{% if age > 0 %}
+                    <div class="entry">
+                        <img class="avatar" src="{{ person.photo_url}}">
+                        <ul>
+                            <li class="name">
+                            {{ person.last_name }}, {{ person.first_name }}
+                            </li>
+                          	<li>{{ person.gender }}</li>
+                          	<li>{{ age }}</li>
+                          	<li>{{ person.primary_phone_number }}</li>
+                            <li class="email">{{ person.primary_email }}</li>
+                            <li>{% if person.birthdate.date|strip|size != 0 %} {{ person.birthdate | date: "%B %d" | prepend: "BD: " }} {%
+                            endif %}
+                            </li>
+                        </ul>
+                    </div>
+          			{% endif %}
+            {% endtablerow %}
+        </table>
+    </div>
+  </div>
+</body>
+</html>
