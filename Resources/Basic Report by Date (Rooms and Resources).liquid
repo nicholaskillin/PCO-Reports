@@ -71,21 +71,21 @@
                       {% endif %}
                     </td>
                     <td>
-                        {{ instance.reservation.primary_room_request.room.name }}
-                        {% if instance.reservation.primary_room_request.room_setup %}
-                            <hr><span style="color: grey;">Room Setup: {{ instance.reservation.primary_room_request.room_setup.name }}</span>
+                        {{ instance.reservation.room_requests.first.room.name }}
+                        {% if instance.reservation.room_requests.first.room_setup %}
+                            <hr><span style="color: grey;">Room Setup: {{ instance.reservation.room_requests.first.room_setup.name }}</span>
                         {% endif %}
                     </td>
                     <td>
                         <ul>
-                            {% for resource_request in instance.reservation.primary_room_request.resource_requests %}
+                            {% for resource_request in instance.reservation.room_requests.first.resource_requests %}
                                 <li>{{ resource_request.quantity }} - {{ resource_request.resource.name }}</li>
                             {% endfor %}
                         </ul>
                     </td>
                     {% if instance.reservation.room_requests.size > 1 %}
                         {% for room_request in instance.reservation.room_requests %}
-                            {% unless room_request.room.name == instance.reservation.primary_room_request.room.name %}
+                            {% unless room_request.room.name == instance.reservation.room_requests.first.room.name %}
                                 <tr style="border-left: 2px solid black; border-right: 2px solid black; border-top: 1px solid black; {% if forloop.last == true and instance.reservation.resource_requests.size == 0 %}border-bottom: 2px solid black;{% endif %}">
                                     <td colspan=3></td>
                                     <td>
