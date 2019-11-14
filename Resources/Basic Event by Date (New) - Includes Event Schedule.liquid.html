@@ -32,7 +32,7 @@
                   <th width="30%">Event Name</th>
                   <th>Start Time</th>
                   <th>End Time</th>
-                  <th width="25%">Primary Room</th>
+                  <th width="25%">Location</th>
                   <th width="20%">Event Owner</th>
                 </tr>
               </thead>
@@ -80,7 +80,7 @@
                         {% endif %}
                       {% endif %}
                     </td>
-                    <td>{{ instance.reservation.primary_room_request.room.name }}</td>
+                    <td>{{ instance.reservation.location }}</td>
                     <td>{{ instance.event.owner.name }}</td>
                   </tr>
                 {% endfor %}

@@ -41,8 +41,8 @@
                                                         <span style="font-weight:normal;">
                                                             {{ instance.event.name }} <span class="status {{ instance.approval_status }}">{{ instance.approval_status }}</span>
 
-                                                            {% if instance.reservation.primary_room_request.room.name %}
-                                                                <span class="soft">(Primary Room: {{ instance.reservation.primary_room_request.room.name }})</span>
+                                                            {% if instance.reservation.location %}
+                                                                <span class="soft">(Location: {{ instance.reservation.location }})</span>
                                                             {% endif %}
                                                         </span>
                                                     {% endif %}

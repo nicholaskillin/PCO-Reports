@@ -68,11 +68,9 @@
                         {% endif %}
                       {% endif %}
 
-                      {% if instance.reservation.primary_room_request.room %}
+                      {% if instance.reservation.location %}
                         <li>
-                          <strong>Primary Room:</strong> {{ instance.reservation.primary_room_request.room.name }}
-                          {{instance.reservation.primary_room_request.resource_requests.length}}
-                          <span class="status {{ instance.reservation.primary_room_request.approval_status }}">{{ instance.reservation.primary_room_request.approval_status }}</span>
+                          <strong>Location:</strong> {{ instance.reservation.location }}
                         </li>
                       {% endif %}
                     </ul>
