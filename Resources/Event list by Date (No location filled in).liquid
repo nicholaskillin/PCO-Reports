@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ report.title }}</title>
+    <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
+    <link href='/favicon.ico?v=1106' rel='icon' type='image/x-icon'>
+  </head>
+  <body>
+    <div class="report-wrapper">
+      <h1 class="header-large txt-center gutter-bottom-small">{{ report.title }}</h1>
+      <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}: {{ report.start_date }} through {{ report.end_date }}</h2>
+
+      {% if report.org_twenty_four_hour_time? %}
+        {% assign time_format = "%H:%M" %}
+      {% else %}
+        {% assign time_format = "%-I:%M%P" %}
+      {% endif%}
+
+      {% if report.org_day_month_dates? %}
+        {% assign date_format = "%d/%m/%Y" %}
+      {% else %}
+        {% assign date_format = "%m/%d/%Y" %}
+      {% endif %}
+
+      {% for day in days %}
+        {% capture day_name %}{{day.date | date: '%A, %B %-d, %Y'}}{% endcapture %}
+        <div class="level-1">
+          {% if day.instances.size != 0 %}
+            {% assign print_day = false %}
+            {% for instance in day.instances %}
+              {% unless instance.reservation.location %}
+                {% assign print_day = true %}
+              {% endunless %}
+            {% endfor %}
+            {% if print_day %}
+              <h2 class="date-header header-large gutter-bottom-small">{{day_name}}</h2>
+              <ul>
+                {% for instance in day.instances %}
+                  {% unless instance.reservation.location %}
+                    <li class="gutter-bottom-medium gutter-top-medium level-2 block">
+                      {% capture starts_at_day_name %}{{instance.starts_at | date: '%A, %B %-d, %Y'}}{% endcapture %}
+                      {% capture ends_at_day_name %}{{instance.ends_at | date: '%A, %B %-d, %Y'}}{% endcapture %}
+                      <h3 class="header-medium gutter-bottom-small">
+                        {% if starts_at_day_name == day_name %}
+                          {% if ends_at_day_name == day_name %}
+                            {{ instance.starts_at | date: time_format | downcase }} - {{ instance.ends_at | date: time_format | downcase }}
+                          {% else %}
+                            Today, {{ instance.starts_at | date: time_format | downcase }} - {{ instance.ends_at | date: date_format }} ({{ instance.ends_at | date: time_format | downcase }})
+                          {% endif %}
+                        {% else %}
+                          {% if ends_at_day_name == day_name %}
+                            {{instance.starts_at | date: date_format}} ({{ instance.starts_at | date: time_format | downcase }}) - Today, {{ instance.ends_at | date: time_format | downcase }}
+                          {% else %}
+                            {{instance.starts_at | date: date_format}} ({{ instance.starts_at | date: time_format | downcase }}) - {{ instance.ends_at | date: date_format }} ({{ instance.ends_at | date: time_format | downcase }})
+                          {% endif %}
+                        {% endif %}:&nbsp;
+                        {% if instance.event.name != 0 %}
+                          <span style="font-weight:normal;">
+                            {{ instance.event.name }} <span class="status {{ instance.approval_status }}">{{ instance.approval_status }}</span>
+
+                            {% if instance.reservation.location != blank %}
+                              <span class="soft">(Location: {{ instance.reservation.location }})</span>
+                            {% endif %}
+                          </span>
+                        {% endif %}
+                      </h3>
+                    </li>
+                  {% endunless %}
+                {% endfor %}
+              </ul>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>
