@@ -28,15 +28,15 @@
           {% if day.instances.size != 0 %}
             {% assign print_day = false %}
             {% for instance in day.instances %}
-              {% unless instance.reservation.location %}
+              {% if instance.reservation.location == blank %}
                 {% assign print_day = true %}
-              {% endunless %}
+              {% endif %}
             {% endfor %}
             {% if print_day %}
               <h2 class="date-header header-large gutter-bottom-small">{{day_name}}</h2>
               <ul>
                 {% for instance in day.instances %}
-                  {% unless instance.reservation.location %}
+                  {% if instance.reservation.location == blank %}
                     <li class="gutter-bottom-medium gutter-top-medium level-2 block">
                       {% capture starts_at_day_name %}{{instance.starts_at | date: '%A, %B %-d, %Y'}}{% endcapture %}
                       {% capture ends_at_day_name %}{{instance.ends_at | date: '%A, %B %-d, %Y'}}{% endcapture %}
@@ -65,7 +65,7 @@
                         {% endif %}
                       </h3>
                     </li>
-                  {% endunless %}
+                  {% endif %}
                 {% endfor %}
               </ul>
             {% endif %}
