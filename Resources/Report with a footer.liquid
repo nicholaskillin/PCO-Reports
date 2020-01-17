@@ -1,0 +1,52 @@
+{% comment %}
+
+To add a header or a footer you can add the @page entry shown below to the <head> section of your html.
+What shows up in the header/footer is specified in `content:`
+
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      @page {
+        margin-bottom: 75px;
+        @bottom-center {
+          content: "Bottom Center";
+        }
+      }
+    </style>
+  </head>
+
+{% comment %}
+Options are:
+
+@page {
+  margin-bottom: 75px;
+
+  @top-left-corner {
+    content: "";
+    background: green;
+  }
+
+  @top-center {
+
+  }
+
+  @top-right-corner {
+
+  }
+
+  @bottom-left-corner {
+
+  }
+
+  @bottom-center {
+    content: "Bottom Center";
+  }
+
+  @bottom-right-corner {
+
+  }
+}
+{% endcomment %}
