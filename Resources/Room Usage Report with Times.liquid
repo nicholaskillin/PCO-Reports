@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <title>Usage Report</title>
+    <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
+  </head>
+  <body>
+    {% assign total_building_use_in_minutes = 0 %}
+    <div class="report-wrapper">
+      {% if report.kind == "event" %}
+        <h1 class="header-large txt-center gutter-bottom-small">Room Usage Report with Times</h1>
+      {% else %}
+        <h1 class="header-large txt-center gutter-bottom-small">{{ report.kind | capitalize }} Usage Report</h1>
+      {% endif %}
+      <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}: {{ report.start_date }} through {{ report.end_date }}</h2>
+
+      {% if report.org_twenty_four_hour_time? %}
+        {% assign date_format = "%A, %B %-d, %H:%M" %}
+      {% else %}
+        {% assign date_format = "%A, %B %-d, %-I:%M%P" %}
+      {% endif%}
+      {% if rooms.size != 0 %}
+        <div class="level-1">
+          <h2 class="header-large date-header gutter-bottom-small">Rooms</h2>
+          {% for room in rooms %}
+            <div class="level-2">
+              <h2 class="header-large gutter-bottom-small">{{ room.name }}</h2>
+            </div>
+            {% if room.bookings.size == 0 %}
+              <div class="level-2 gutter-bottom-medium">
+                <div class="soft pad-left">
+                  No events for this room.
+                </div>
+              </div>
+            {% else %}
+              <!--- Reset time variables for each room --->
+              {% assign total_minutes_per_room = 0 %}
+              <!--- End reset of time variables --->
+              {% assign total_time = 0 %}
+              <div class="level-2 block gutter-bottom-medium">
+                {% for rb in room.bookings %}
+                  <ul class="gutter-bottom-small">
+                     <!--- Figure out times per event --->
+                     {% assign event_start_seconds = rb.starts_at | date: "%s" %}
+                     {% assign event_end_seconds = rb.ends_at | date: "%s" %}
+                     {% assign event_time_in_minutes = event_end_seconds | minus: event_start_seconds | divided_by: 60 %}
+                     {% assign event_time_in_hours = event_time_in_minutes | divided_by: 60 %}
+                     {% assign minutes_left_after_hours = event_time_in_minutes | modulo: 60 %}
+                     {% if minutes_left_after_hours == 0 %}
+                       {% assign minutes_left_after_hours = 0 | date: "%M" %}
+                     {% endif %}
+                     <!--- End calculating time per event --->
+                     
+                     <!--- Add event time to overall time for room --->
+                     {% assign total_minutes_per_room = total_minutes_per_room | plus: event_time_in_minutes %}
+                     <!--- End adding event time to overall time for room --->
+                    <li>
+                      <span class="status {{ rb.approval_status }}">{{ rb.approval_status }}</span> <strong>{{ rb.starts_at | date: date_format }} - {{ rb.ends_at | date: date_format }} </strong> - {{ rb.event.name }}
+                      <div class="level-3 block gutter-bottom-small">
+                        <ul>
+                          <li>Event Length: {{event_time_in_hours}}:{{minutes_left_after_hours}}</li>
+                        </ul>
+                      </div>
+                    </li>
+                  </ul>
+                {% endfor %}
+              </div>
+            {% endif %}
+            <!--- Calculate total time per room --->
+            {% assign room_time_in_hours = total_minutes_per_room | divided_by: 60 %}
+            {% assign room_minutes_left_after_hours = total_minutes_per_room | modulo: 60 %}
+            {% if room_minutes_left_after_hours < 10 %}
+              {% assign room_minutes_left_after_hours =  room_minutes_left_after_hours | prepend: "0" %}
+            {% endif %}
+            <!--- End calculate total time per room --->
+            <div class="level-2 block gutter-bottom-medium">
+              <ul>
+                <li>Total Room Use: {{ room_time_in_hours }}:{{room_minutes_left_after_hours}} </li>
+              </ul>
+            </div>
+            
+            <!--- Calculate total building use time in minutes --->
+            {% assign total_building_use_in_minutes = total_building_use_in_minutes | plus: total_minutes_per_room %}
+            <!--- End calculate total building use time in minutes --->
+          {% endfor %}
+          <!--- Convert total building use time to friendly format --->
+          {% assign total_time_in_hours = total_building_use_in_minutes | divided_by: 60 %}
+          {% assign total_minutes_left_after_hours = total_building_use_in_minutes | modulo: 60 %}
+          {% if total_minutes_left_after_hours < 10 %}
+            {% assign total_minutes_left_after_hours =  total_minutes_left_after_hours | prepend: "0" %}
+          {% endif %}
+          <!--- End convert total building use time to friendly format --->
+          <h3>Overall Time: {{ total_time_in_hours }}:{{ total_minutes_left_after_hours }}<h3>
+        </div>
+      {% endif %}
+    </div>
+  </body>
+</html>
