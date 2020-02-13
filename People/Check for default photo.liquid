@@ -1,0 +1,11 @@
+{% comment %}
+This currently only checks for generic adult male and generic female child. 
+
+Also, I think these are all changing, so this likely won't work very soon
+{% endcomment %}
+
+{% if person.photo_url == "https://people.planningcenteronline.com/static/no_photo_thumbnail_man_gray.png?g=350x350%23" or person.photo_url == "https://people.planningcenteronline.com/static/no_photo_thumbnail_girl_gray.png?g=350x350%23"%}
+  Default photo
+{% else %}
+  Custom photo
+{% endif %}
